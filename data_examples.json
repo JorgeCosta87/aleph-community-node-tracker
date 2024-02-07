@@ -1,0 +1,209 @@
+{
+    "messages": [
+        {
+            "item_hash": "8397baefbd9852b954b629edf706815acbf665f4de38c0498a27f6775bd8816c",
+            "type": "POST",
+            "chain": "ETH",
+            "sender": "0x4D52380D3191274a04846c89c069E6C3F2Ed94e4",
+            "signature": "0x587c8ef2e994eee18e8e9325ae16d4e6c53f47e56b303d95381e9db1b24928650978a9e38bae4735f175a5ca5a775c93c19e8981bb11875b17d33b947c69b31e1c",
+            "item_type": "storage",
+            "item_content": null,
+            "content": {
+                "time": 1706184217.336006,
+                "type": "aleph-network-metrics",
+                "address": "0x4D52380D3191274a04846c89c069E6C3F2Ed94e4",
+                "content": {
+                    "tags": [
+                        "mainnet"
+                    ],
+                    "metrics": {
+                        "ccn": [{
+                                "asn": 16276,
+                                "url": "http://198.244.212.135:4024/",
+                                "as_name": "OVH, FR",
+                                "node_id": "83708bdd5c60467460dd1f53256a51188029e833f4248b6e8df541f3b5016b23",
+                                "version": "v0.5.1",
+                                "txs_total": 0,
+                                "measured_at": 1706184015.599201,
+                                "base_latency": 0.06723284721374512,
+                                "metrics_latency": 0.46271467208862305,
+                                "pending_messages": 0,
+                                "aggregate_latency": 0.058843135833740234,
+                                "base_latency_ipv4": 0.06723284721374512,
+                                "eth_height_remaining": 154,
+                                "file_download_latency": 0.06866765022277832
+                            }],
+                        "crn": [{
+                                "asn": 201814,
+                                "url": "https://above.everythingwilldecentrali.se/",
+                                "as_name": "MEVSPACE, PL",
+                                "node_id": "13c4bce5086cb4d03db2d3b4801806532048604c9b9a668c865e85c52b8e36ff",
+                                "version": "0.3.2",
+                                "measured_at": 1706184110.93148,
+                                "base_latency": 0.0041921138763427734,
+                                "base_latency_ipv4": 0.011366844177246094,
+                                "diagnostic_vm_latency": 0.01634049415588379
+                            }],
+                        "server": "151.115.63.76",
+                        "server_asn": 12876,
+                        "server_as_name": "Online SAS, FR"
+                    },
+                    "version": "1.0"
+                }
+            },
+            "time": 1706184217.340448,
+            "channel": "aleph-scoring",
+            "size": 136794,
+            "confirmations": [],
+            "confirmed": false
+        }
+    ],
+    "pagination_per_page": 1,
+    "pagination_page": 1,
+    "pagination_total": 43662,
+    "pagination_item": "messages"
+}
+
+[
+    {
+        "asn": 201814,
+        "url": "https://above.everythingwilldecentrali.se/",
+        "as_name": "MEVSPACE, PL",
+        "node_id": "13c4bce5086cb4d03db2d3b4801806532048604c9b9a668c865e85c52b8e36ff",
+        "version": "0.3.2",
+        "measured_at": 1706184110.93148,
+        "base_latency": 0.0041921138763427734,
+        "base_latency_ipv4": 0.011366844177246094,
+        "diagnostic_vm_latency": 0.01634049415588379
+    },
+    {
+        "asn": 201814,
+        "url": "https://above.everythingwilldecentrali.se/",
+        "as_name": "MEVSPACE, PL",
+        "node_id": "13c4bce5086cb4d03db2d3b4801806532048604c9b9a668c865e85c52b8e36ff",
+        "version": "0.3.2",
+        "measured_at": 1706184110.93148,
+        "base_latency": 0.0041921138763427734,
+        "base_latency_ipv4": 0.011366844177246094,
+        "diagnostic_vm_latency": 0.01634049415588379
+    }
+]
+
+
+
+
+
+
+
+
+import streamlit as st
+import requests
+
+
+def all_metrics_present(item):
+    metrics = [
+    "measured_at",
+    "base_latency",
+    "base_latency_ipv4",
+    "diagnostic_vm_latency"
+]
+    return all(item.get(metric) is not None for metric in metrics)
+
+def toggle_expand_state(index):
+    key = f'expand_state_{index
+}'
+    if key in st.session_state:
+        st.session_state[key
+] = not st.session_state[key
+]
+
+
+def display_crn_nodes(data):
+
+    for index in range(len(data)):
+        if f'expand_state_{index
+}' not in st.session_state:
+            st.session_state[f'expand_state_{index
+    }'
+] = False
+
+    for index, item in enumerate(data):
+        col1, col2, col3, col4, col5 = st.columns([
+    1,
+    2,
+    6,
+    2,
+    2
+])
+
+        with col1:
+            status_color = "green" if all_metrics_present(item) else "red"
+            st.markdown(f"<span style='color: {status_color};'>●</span>", unsafe_allow_html=True)
+
+        with col2:
+            st.markdown(f"{item['as_name']}")
+
+        with col3:
+            st.markdown(f"{item['url']}")
+
+        with col4:
+            if st.button("Subscribe", key=f"sub_{index}"):
+                st.write("Subscribed!")
+
+        with col5:
+            expanded = st.session_state[f'expand_state_{index
+    }'
+]
+            btn_label = f"{'▲' if expanded else '▼'}"
+            if st.button(btn_label, key=f"expand_btn_{index}", on_click=toggle_expand_state, args=(index,)):
+                pass  # Button action is handled by the on_click callback
+
+        # Conditional display of JSON data
+        if expanded:
+            st.json(item)
+
+
+data_test = [
+    {
+        "asn": 201814,
+        "url": "https://above.everythingwilldecentrali.se/",
+        "as_name": "MEVSPACE, PL",
+        "node_id": "13c4bce5086cb4d03db2d3b4801806532048604c9b9a668c865e85c52b8e36ff",
+        "version": "0.3.2",
+        "measured_at": 1706184110.93148,
+        "base_latency": 0.0041921138763427734,
+        "base_latency_ipv4": 0.011366844177246094,
+        "diagnostic_vm_latency": 0.01634049415588379
+    },
+    {
+        "asn": 201814,
+        "url": "https://above.everythingwilldecentrali.se/",
+        "as_name": "MEVSPACE, PL",
+        "node_id": "13c4bce5086cb4d03db2d3b4801806532048604c9b9a668c865e85c52b8e36ff",
+        "version": "0.3.2",
+        "measured_at": 1706184110.93148,
+        "base_latency": 0.0041921138763427734,
+        "base_latency_ipv4": 0.011366844177246094,
+        "diagnostic_vm_latency": 0.01634049415588379
+    }
+]
+
+
+st.title('Aleph Node Metrics')
+
+symbol = st.text_input("Enter Stock Symbol:", value="AAPL")
+
+if st.button('Get Nodes'):
+    display_crn_nodes(data_test)
+"""
+    response = requests.get("http://localhost:8000/crn-metrics")
+    if response.status_code == 200:
+        data = response.json()
+        display_crn_nodes(data_test)
+    else:
+        st.write("Error fetching crn nodes")
+"""
+
+🔍
+🔕
+🚫
