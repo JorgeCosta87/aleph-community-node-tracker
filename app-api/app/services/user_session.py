@@ -15,6 +15,7 @@ from app.services.nodes_metrics import NodeMetricsService
 from app.schemas.node import NodesMetrics
 from app.repositories.message import MessageRepository
 from app.repositories.subscribe import SubscribeRepository
+from app.config.settings import settings
 
 logger = logging.getLogger(__name__) 
 
@@ -136,7 +137,7 @@ class UserSessionService():
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
 
-        verification_link = f"http://localhost:8000/api/v1/verify?token={token}"
+        verification_link = f"http://{settings.email_verify_domain}/api/v1/verify?token={token}"
         email_subject = "Aleph community node tracker Verify your email"
         email_body = f"Please click on the link to verify your email: {verification_link}"
 

@@ -44,7 +44,7 @@ class NodeMetricsService():
 
             last_message = messageRepository.get_message_by_hash(message_hash)
 
-            #If the hash isn't on the db, we update the nodes
+            #If the hash isn't on the db, a new message is added and the nodes are updated on the db
             if last_message is None:
                 message_saved = messageRepository.save(
                     MessageCreate(
@@ -56,27 +56,26 @@ class NodeMetricsService():
                 )
                 logger.info(f"Saved new message with hash: {message_saved.item_hash}")
                 self._update_crn_metrics(crn_metrics, message_saved.id)
-                logger.info(f"{len(crn_metrics)} Crn metrics saved")
-
-                current_time = int(time.time()) 
-                time_since_message = current_time - update_time
-                time_betwwen_messages = 540
-                
-                if time_since_message < time_betwwen_messages:
-                    sleep_time = time_betwwen_messages - time_since_message
-                    logger.info(f"Sleeping for {round(sleep_time,1)} seconds to make up for 9 minutes since message time.")
-                    time.sleep(sleep_time)  
+                logger.info(f"Saved {len(crn_metrics)} Crn metrics ")
 
             else:
-                logger.info(f"No new message last update at: {Utils.convert_unix_to_datetime(update_time)}")
-
-            time.sleep(60)
+                logger.info(f"No new message, last update at: {Utils.convert_unix_to_datetime(update_time)}")
+            
+            current_time = int(time.time()) 
+            time_since_message = current_time - update_time
+            time_betwwen_messages = 600
+            
+            if time_since_message < time_betwwen_messages:
+                sleep_time = time_betwwen_messages - time_since_message
+                logger.info(f"Sleeping for {round(sleep_time,1)}")
+                time.sleep(sleep_time)  
 
     def _update_crn_metrics(self, crn_nodes_metrics: list[BaseCrnMetric], message_id: uuid.UUID):
-        
         nodes_db = self._get_crn_nodes_indexed_by_node_id()
         
         crn_node_metrics_to_update = []
+        crn_node_metric_down = []
+
         for crn_node_metric in crn_nodes_metrics:
             if crn_node_metric.node_id not in nodes_db:
                 crn_db = self.repository.save_crn_node(
@@ -91,7 +90,7 @@ class NodeMetricsService():
             node_status = self.all_metrics_present(crn_node_metric)
 
             if node_status is False:
-                self._send_notification()
+                crn_node_metric_down.append(crn_node_metric_down)
             
             crn_node_metric_create = CrnMetricCreate(
                 asn=crn_node_metric.asn,
