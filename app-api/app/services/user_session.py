@@ -35,7 +35,7 @@ class UserSessionService():
 
         if user_session_db.is_verified == False:
             raise HTTPException(
-                status_code=403, detail=f"Verify email first. Check your indbox at {subscriber_schema.value}"
+                status_code=403, detail=f"📧 Verify your email first. Check your indbox at {subscriber_schema.value}"
             )
 
 

@@ -215,8 +215,9 @@ class NodeMetricsService():
 
         for node in nodes:
             if node.type == NodeType.CCN:
+            
                 if node.id in last_ccn_metrics:
-                    last_metric = CrnMetricsResponseSchema(**last_ccn_metrics[node.id].__dict__)
+                    last_metric = CcnMetricsResponseSchema(**last_ccn_metrics[node.id].__dict__)
                 else:
                     logger.info(f"Last metric do not have the aleph node id: {node.id}")
             elif node.type == NodeType.CRN:

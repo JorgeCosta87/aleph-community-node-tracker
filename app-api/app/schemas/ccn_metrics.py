@@ -4,13 +4,11 @@ import uuid
 
 from pydantic import BaseModel, validator
 
-from app.schemas.message_metrics import BaseCnnMetric
 
 class BaseCcnMetric(BaseModel):
     asn: Optional[int] = None
     url: Optional[str] = None
     as_name: Optional[str] = None
-    node_id: Optional[str] = None
     version: Optional[str] = None
     txs_total: Optional[int] = None
     measured_at: Optional[float] = None
@@ -43,7 +41,6 @@ class CcnMetricsResponseSchema(BaseModel):
     asn: Optional[int] = None
     url: Optional[str] = None
     as_name: Optional[str] = None
-    node_id: Optional[str] = None
     version: Optional[str] = None
     txs_total: Optional[int] = None
     measured_at: Optional[float] = None

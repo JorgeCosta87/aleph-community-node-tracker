@@ -1,3 +1,4 @@
+from email.policy import default
 from pathlib import Path
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings
@@ -10,6 +11,7 @@ POSTGRES_DB: str = config('POSTGRES_DB')
 DB_HOST: str = config('DB_HOST')
 DB_PORT: int = config('DB_PORT', default=5432, cast=int)
 EMAIL_VERIFY_DOMAIN: str = config('EMAIL_VERIFY_DOMAIN', default="localhost:8000", cast=str)
+STREAMLIT_HOST: str = config('STREAMLIT_HOST', default="http://localhost:8501", cast=str)
 
 
 class BaseConfig(BaseSettings):
@@ -20,6 +22,7 @@ class BaseConfig(BaseSettings):
     db_host: str = DB_HOST
     db_port: int = DB_PORT
     postgres_db_name: str = POSTGRES_DB
+    streamlit_host: str = STREAMLIT_HOST
 
 class DatabaseSettings(BaseConfig):
     @property

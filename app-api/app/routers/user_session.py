@@ -1,6 +1,8 @@
 import uuid
 from fastapi import APIRouter, Depends
 
+from fastapi.responses import RedirectResponse
+
 from app.db.connection import Session, get_db_session
 from app.repositories.user_seasion import UserSessionRepository
 from app.services.user_session import UserSessionService
@@ -12,6 +14,7 @@ from app.schemas.node import NodesMetrics
 from app.repositories.node import NodeRepository
 from app.services.nodes_metrics import NodeMetricsService
 from app.repositories.message import MessageRepository
+from app.config.settings import settings
 
 user_session_router = APIRouter(
     prefix="/api/v1",
@@ -63,7 +66,7 @@ async def retrieve_user_session_data(
     response = service.retrieve_user_session_data(
         user_session_id, subscriber_repository, node_service, message_repository
         )
-
+    
     return response
 
 
@@ -71,12 +74,12 @@ async def retrieve_user_session_data(
 @user_session_router.get("/verify")
 async def verify_token(
     token: str, db: Session = Depends(get_db_session)
-) -> dict:
+) -> RedirectResponse:
 
     repository = UserSessionRepository(db)
     service = UserSessionService(repository)
 
     response = service.verify_user_session_token(token)
 
-    return response
+    return RedirectResponse(url=settings.streamlit_host)
 
