@@ -4,8 +4,6 @@ from pydantic_settings import BaseSettings
 from decouple import config
 
 ROOT_DIR = Path(__file__).parent.parent.parent
-FASTAPI_HOST: str = config('FASTAPI_HOST', default="127.0.0.1")
-FASTAPI_PORT: int = config('FASTAPI_PORT', default=8000)
 POSTGRES_USER: str = config('POSTGRES_USER')
 POSTGRES_PASSWORD: str = config('POSTGRES_PASSWORD')
 POSTGRES_DB: str = config('POSTGRES_DB')
@@ -16,8 +14,6 @@ EMAIL_VERIFY_DOMAIN: str = config('EMAIL_VERIFY_DOMAIN', default="localhost:8000
 
 class BaseConfig(BaseSettings):
     root_dir: Path = ROOT_DIR
-    fastapi_host: str = FASTAPI_HOST
-    fast_api_port: str = FASTAPI_PORT
     email_verify_domain: str = EMAIL_VERIFY_DOMAIN
     postgres_user: str = POSTGRES_USER
     postgres_password: str = POSTGRES_PASSWORD

@@ -12,7 +12,7 @@ class Node(Base):
     __tablename__ = 'node'
 
     id: Mapped[UUID] = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    node_id: Mapped[str] = Column(String, index=True, unique=True, nullable=False)
+    aleph_node_id: Mapped[str] = Column(String, index=True, unique=True, nullable=False)
     type : Mapped[NodeType] = Column(Enum(NodeType))
 
     subscriptions: Mapped[list["Subscription"]] = relationship(

@@ -114,7 +114,7 @@ class UserSessionService():
         if user_session_db.is_verified == False:
             raise HTTPException(status_code=403, detail="Verify email first.")
         
-        return node_service.fetch_all_nodes_check_is_subscribed(
+        return node_service.fetch_all_nodes_and_subscribed(
             user_session_db.subscriber_id,
             subscriber_repository,
             messageRepository

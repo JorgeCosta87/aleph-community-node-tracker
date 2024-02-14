@@ -31,12 +31,12 @@ def upgrade() -> None:
     op.create_index(op.f('ix_message_id'), 'message', ['id'], unique=False)
     op.create_table('node',
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('node_id', sa.String(), nullable=False),
+    sa.Column('aleph_node_id', sa.String(), nullable=False),
     sa.Column('type', sa.Enum('CRN', 'CCN', name='nodetype'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_node_id'), 'node', ['id'], unique=False)
-    op.create_index(op.f('ix_node_node_id'), 'node', ['node_id'], unique=True)
+    op.create_index(op.f('ix_node_aleph_node_id'), 'node', ['aleph_node_id'], unique=True)
     op.create_table('subscriber',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('type', sa.String(length=50), nullable=True),

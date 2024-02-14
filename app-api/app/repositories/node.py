@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from app.schemas.node import NodeCreate, NodeSchema
 from app.models.node import Node
 from app.models.crn_metric import CrnMetric
+from app.models.ccn_metric import CcnMetric
 from app.schemas.crn_metrics import CrnMetricCreate, CrnMetricSchema
+from app.schemas.ccn_metrics import CcnMetricCreate, CcnMetricSchema
 from app.models.message import Message
 from app.models.subscriber import Subscriber, Subscription
 from app.models.user_session import UserSession
@@ -19,8 +21,8 @@ class NodeRepository():
         self.db_session = db_session
 
     
-    def get_crn_node_by_node_id(self, node_id: int) -> NodeSchema:
-        model = self.db_session.query(Node).filter_by(node_id=node_id).first()
+    def get_crn_node_by_aleph_node_id(self, aleph_node_id: str) -> NodeSchema:
+        model = self.db_session.query(Node).filter_by(aleph_node_id=aleph_node_id).first()
 
         return NodeSchema.model_validate(model, from_attributes=True) 
  
@@ -57,6 +59,23 @@ class NodeRepository():
                     node_id=metric.node_id,
                     status=metric.status
                 )
+            )
+        return response_data
+    
+
+    def get_latest_ccn_metrics(self) -> list[CcnMetricSchema]:
+        latest_message_time = self.db_session.query(func.max(Message.time)).scalar()
+        metrics = (
+                        self.db_session.query(CcnMetric)
+                        .join(Message, CcnMetric.message_id == Message.id)
+                        .filter(Message.time == latest_message_time)
+                        .all()
+                )
+
+        response_data = []
+        for metric in metrics:
+            response_data.append(
+                CcnMetricSchema.model_validate(metric, from_attributes=True)
             )
         return response_data
 
@@ -97,6 +116,37 @@ class NodeRepository():
         self.db_session.bulk_save_objects(metrics_to_save)
         self.db_session.commit()
         
+
+    def bulk_save_ccn_nodes_metrics(
+        self,
+        ccn_nodes_metrics: list[CcnMetricCreate]
+    ):
+        metrics_to_save = []
+
+        for metric in ccn_nodes_metrics:
+            new_metric = CcnMetric(
+                asn=metric.asn,
+                url=metric.url,
+                as_name=metric.as_name,
+                version=metric.version,
+                txs_total=metric.txs_total,
+                measured_at=metric.measured_at,
+                base_latency=metric.base_latency,
+                metrics_latency=metric.metrics_latency,
+                pending_messages=metric.pending_messages,
+                aggregate_latency=metric.aggregate_latency,
+                base_latency_ipv4=metric.base_latency_ipv4,
+                eth_height_remaining=metric.eth_height_remaining,
+                file_download_latency=metric.file_download_latency,
+                status=metric.status,
+                message_id=metric.message_id,
+                node_id=metric.node_id,
+
+            )
+            metrics_to_save.append(new_metric)
+
+        self.db_session.bulk_save_objects(metrics_to_save)
+        self.db_session.commit()
 
     def get_last_metric(self) -> CrnMetricSchema | None:
         model = self.db_session.query(CrnMetric) \

@@ -7,7 +7,7 @@ from app.schemas.ccn_metrics import CcnMetricsResponseSchema
 
 
 class BaseNode(BaseModel):
-    node_id: str
+    aleph_node_id: str
     type: NodeType
 
 class NodeCreate(BaseNode):
