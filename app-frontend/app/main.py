@@ -52,7 +52,7 @@ def handle_user_session(session_id: uuid.UUID):
     st.cache_data.clear()
     return status, data
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=15)
 def fetch_user_session_data(user_session_id: uuid.UUID) -> NodesMetrics:
     url = f"http://localhost:8000/api/v1/user-session-data?user_session_id={user_session_id}"
     response = requests.get(url)
@@ -125,10 +125,16 @@ st.title('Aleph Community node tracker')
 print(f"------------- cookie_user_session_id: {cookie_user_session_id}")
 print(f"------------- user_session_id: {st.session_state['user_session']}")
 
+
 if cookie_user_session_id:
     status, user_session = handle_user_session(cookie_user_session_id)
     if status == 403:
+
         st.info(user_session)
+
+        if st.button("🔄", key="refresh"):
+            st.rerun()
+
         st.session_state['user_session_status'] = 403
     else:
         st.session_state['user_session'] = user_session
@@ -159,10 +165,13 @@ print(user_session)
 
 if user_session:
 
+    st.session_state['tab_selected'] = "ccn"
+
     email =  user_session.value
     print(st.session_state['user_session'])
 
     nodes_metrics = fetch_user_session_data(user_session.session_id)
+    #print(nodes_metrics)
 
     if email:
         st.write(f"Weclome {email}")
@@ -177,23 +186,37 @@ if user_session:
     with search_col:
         search_query = st.text_input("Search node url keyword", "").lower()
 
-    st.write(f"Last Update: {nodes_metrics.updated_at}")
+    col1, col2 = st.columns([20, 2], gap="small")
+
     chosen_id = stx.tab_bar(data=[
         stx.TabBarItemData(id="ccn", title="🌐 CCN", description=""),
         stx.TabBarItemData(id="crn", title="💻 CRN", description=""),
         stx.TabBarItemData(id="subscribed", title="🌟 Subscribed", description="")
-    ], default="ccn")
+    ], default=st.session_state['tab_selected'])
 
+
+
+    with col1:
+        st.write(f"Last update: {nodes_metrics.updated_at}")
+
+    with col2:
+        if st.button("🔄", key="refresh"):
+            st.rerun()
+
+    
+
+
+    st.session_state['tab_selected'] = chosen_id
 
     if chosen_id == "ccn":
         filtered_nodes = filter_nodes(nodes_metrics.metrics, NodeType.CCN)
+        #print(filtered_nodes)
     elif chosen_id == "crn":
         filtered_nodes = filter_nodes(nodes_metrics.metrics, NodeType.CRN)
     else: 
         filtered_nodes = filter_nodes(nodes_metrics.metrics, subscribed=True)
 
-
-    page_size = 10
+    page_size = 20
     total_pages = max(1, len(filtered_nodes) // page_size + (len(filtered_nodes) % page_size > 0))
     with pagination_col:
         page_number = st.number_input(

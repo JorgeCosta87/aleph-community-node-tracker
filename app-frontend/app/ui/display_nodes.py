@@ -35,14 +35,17 @@ def display_nodes(
         with st.container():
             col1, col2, col3, col4, col5, col6 = st.columns([1, 3, 6, 1, 1, 2])
 
+            min_height_style = "<style>.div-height {min-height: 50px; display: flex; align-items: center;}</style>"
+
+
             with col1:
                 status_color = "green" if node.last_metric.status else "red"
-                st.markdown(f"<span style='color: {status_color};'>●</span>", unsafe_allow_html=True)
-
+                st.markdown(min_height_style + f"<div class='div-height'><span style='color: {status_color}; font-size: 22px; display: inline-block; vertical-align: middle;'>●</span></div>", unsafe_allow_html=True)
             with col2:
-                st.markdown(truncate_and_hover(node.last_metric.version, 15), unsafe_allow_html=True)
+                st.markdown(min_height_style + f"<div class='div-height'>{truncate_and_hover(node.last_metric.version, 15)}</div>", unsafe_allow_html=True)
+
             with col3:
-                st.markdown(truncate_and_hover(node.last_metric.url, 37), unsafe_allow_html=True)
+                st.markdown(min_height_style + f"<div class='div-height'>{truncate_and_hover(node.last_metric.url, 37)}</div>", unsafe_allow_html=True)
             with col4:
                 if st.button("📋", key=f'details_button_{index}'):
                     current_state = st.session_state[details_key]
@@ -65,20 +68,43 @@ def display_nodes(
             
             if st.session_state[details_key]:
                 with st.container(border=True):
-                    st.json({
+                    if node.node_type == NodeType.CCN:
+                        #print(node.node_type)
+                        #print(node)
+                        st.json({
                                 "id":node.aleph_node_id,
                                 "asn":node.last_metric.asn,
                                 "url":node.last_metric.url,
                                 "as_name":node.last_metric.as_name,
                                 "version":node.last_metric.version,
+                                "txs_total":node.last_metric.txs_total,
                                 "measured_at":node.last_metric.measured_at,
                                 "measured_at_formatted":node.last_metric.measured_at_formatted,
                                 "base_latency":node.last_metric.base_latency,
+                                "metrics_latency":node.last_metric.metrics_latency,
+                                "pending_messages":node.last_metric.pending_messages,
+                                "aggregate_latency":node.last_metric.aggregate_latency,
                                 "base_latency_ipv4":node.last_metric.base_latency_ipv4,
-                                "full_check_latency":node.last_metric.full_check_latency,
-                                "diagnostic_vm_latency":node.last_metric.diagnostic_vm_latency,
+                                "eth_height_remaining":node.last_metric.eth_height_remaining,
+                                "file_download_latency":node.last_metric.file_download_latency,
                             }
-                    )
+                        )
+        
+                    elif node.node_type == NodeType.CRN:
+                        st.json({
+                                    "id":node.aleph_node_id,
+                                    "asn":node.last_metric.asn,
+                                    "url":node.last_metric.url,
+                                    "as_name":node.last_metric.as_name,
+                                    "version":node.last_metric.version,
+                                    "measured_at":node.last_metric.measured_at,
+                                    "measured_at_formatted":node.last_metric.measured_at_formatted,
+                                    "base_latency":node.last_metric.base_latency,
+                                    "base_latency_ipv4":node.last_metric.base_latency_ipv4,
+                                    "full_check_latency":node.last_metric.full_check_latency,
+                                    "diagnostic_vm_latency":node.last_metric.diagnostic_vm_latency,
+                                }
+                        )
 
 
 """
@@ -209,4 +235,22 @@ if user_session:
             display_nodes(nodes_list, start_index, end_index)
 
 
-"""
+
+        # st.markdown(
+        #     """
+        #     <style>
+        #     .stButton>button {
+        #         margin-top: 5px;
+        #             display: block;
+        #             width: 100%;
+        #             margin: 5;
+        #             padding: 10px; /* Adjust padding to increase height */
+        #             box-sizing: border-box;
+        #     }
+        #     .stMarkdown, .stAlert {
+        #         margin-top: 0px; /* Adjust this value to center the info box vertically */
+        #     }
+        #     </style>
+        #     """,
+        # unsafe_allow_html=True
+        # )

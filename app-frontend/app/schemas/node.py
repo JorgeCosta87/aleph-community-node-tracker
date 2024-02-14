@@ -1,5 +1,5 @@
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from schemas.constants import NodeType
 from schemas.crn_metrics import CrnMetricsResponseSchema
@@ -25,6 +25,15 @@ class NodeMetricsSubscribedBody(BaseModel):
     aleph_node_id: str
     node_type: NodeType
     last_metric: CrnMetricsResponseSchema | CcnMetricsResponseSchema
+
+    @validator('last_metric', pre=True)
+    def set_metric_type(cls, value, values):
+        if 'node_type' in values:
+            if values['node_type'] == NodeType.CRN:
+                return CrnMetricsResponseSchema(**value)
+            elif values['node_type'] == NodeType.CCN:
+                return CcnMetricsResponseSchema(**value)
+        raise ValueError("Invalid node_type for determining metrics schema")
 
 class NodesMetrics(BaseModel):
     updated_at: str
