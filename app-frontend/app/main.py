@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import re
 import uuid
 import streamlit as st
 import requests
@@ -9,9 +10,17 @@ from schemas.user_session import UserSessionBodyResponse, UserSessionSchema
 from schemas.subscriber import SubscriberCreate
 from schemas.constants import NodeType, SubscribeType
 from schemas.node import NodeMetricsSubscribedBody, NodesMetrics
+#from streamlit_js_eval import streamlit_js_eval
 
 from ui.display_nodes import display_nodes
 
+
+def is_valid_email(email):
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    if re.match(pattern, email):
+        return True
+    else:
+        return False
 
 def request_subscribe_node(node_id:uuid.UUID, subscriber_id:uuid.UUID):
     url = f"http://localhost:8000/api/v1/node/{node_id}/subscriber/{subscriber_id}"
@@ -30,7 +39,7 @@ def request_unsubscribe_node(node_id:uuid.UUID, subscriber_id:uuid.UUID):
         return None
 
 
-@st.cache_data 
+@st.cache_data(ttl=360)
 def fetch_user_session(user_session_id: uuid.UUID) -> UserSessionBodyResponse | str | None:
     url = f"http://localhost:8000/api/v1/user-session?user_session_id={user_session_id}"
     response = requests.get(url)
@@ -105,9 +114,8 @@ def unsubscribe_node(node_id: uuid.UUID):
         st.rerun()
      
 
-#  ****************** MAIN *****************
-    
-
+#  ****************** MAIN *****************~
+            
 cookie_manager = stx.CookieManager()
 cookie_user_session_id = cookie_manager.get("user_session_id")
 
@@ -129,31 +137,40 @@ print(f"------------- user_session_id: {st.session_state['user_session']}")
 if cookie_user_session_id:
     status, user_session = handle_user_session(cookie_user_session_id)
     if status == 403:
+        with st.container():
+            col1, col2 = st.columns([6,1])
+            with col2:
+                if st.button("🔄", key="refresh"):
+                    st.rerun()
+            with col1:
+                st.info(user_session)
 
-        st.info(user_session)
-
-        if st.button("🔄", key="refresh"):
-            st.rerun()
 
         st.session_state['user_session_status'] = 403
     else:
         st.session_state['user_session'] = user_session
         st.session_state['user_session_status'] = 200
 
-if st.session_state['user_session'] is None:
+if st.session_state.get('user_session') is None:
 
-    verify_mail_text = "Verify a new email" if st.session_state['user_session_status'] == 403 else "Enter your email"
+    verify_mail_text = "Verify a new email" if st.session_state.get('user_session_status') == 403 else "Enter your email"
     email = st.text_input(verify_mail_text, "")
+    
+    consent_given = False
+    if len(email) > 0:
+        if is_valid_email(email):
+            consent_given = st.checkbox("I agree that my email will be used solely for notifications, with security measures like HTTPS in place. A session cookie will be stored on my device to identify my session.")
+        else:
+            st.error("Please enter a valid email address.")
 
-    if st.button("Send verification link"):
+    if st.button("Send verification link", disabled=not consent_given):
         print("Button clicked, attempting to send verification email...")
         subscribe_create = SubscriberCreate(type=SubscribeType.EMAIL, value=email)
         user_session = register_user_session(subscribe_create)
 
         if user_session:
             expires_at = datetime.now() + timedelta(days=30)
-            cookie_manager.set("user_session_id", str(
-                user_session.session_id), secure=True, key="user_session_cookie", expires_at=expires_at)
+            cookie_manager.set("user_session_id", str(user_session.session_id), secure=True, key="user_session_cookie", expires_at=expires_at)
 
             print(f"User session created: {user_session}")
         else:
@@ -182,19 +199,22 @@ if user_session:
 
     search_col, pagination_col = st.columns([3, 1])
     tab_col, update_time_col = st.columns([3, 1])
-
+    search_query = None
     with search_col:
         search_query = st.text_input("Search node url keyword", "").lower()
 
     col1, col2 = st.columns([20, 2], gap="small")
+
+    subscribed_nodes = filter_nodes(nodes_metrics.metrics, subscribed=True)
+
+    if len(subscribed_nodes) > 0 and search_query is None:
+        st.session_state['tab_selected'] = "subscribed"
 
     chosen_id = stx.tab_bar(data=[
         stx.TabBarItemData(id="ccn", title="🌐 CCN", description=""),
         stx.TabBarItemData(id="crn", title="💻 CRN", description=""),
         stx.TabBarItemData(id="subscribed", title="🌟 Subscribed", description="")
     ], default=st.session_state['tab_selected'])
-
-
 
     with col1:
         st.write(f"Last update: {nodes_metrics.updated_at}")
@@ -204,8 +224,6 @@ if user_session:
             st.rerun()
 
     
-
-
     st.session_state['tab_selected'] = chosen_id
 
     if chosen_id == "ccn":
@@ -214,7 +232,7 @@ if user_session:
     elif chosen_id == "crn":
         filtered_nodes = filter_nodes(nodes_metrics.metrics, NodeType.CRN)
     else: 
-        filtered_nodes = filter_nodes(nodes_metrics.metrics, subscribed=True)
+        filtered_nodes = subscribed_nodes
 
     page_size = 20
     total_pages = max(1, len(filtered_nodes) // page_size + (len(filtered_nodes) % page_size > 0))

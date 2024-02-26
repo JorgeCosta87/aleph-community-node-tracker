@@ -1,7 +1,9 @@
+from collections import defaultdict
 import logging
 import uuid
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from app.schemas.node import NodeCreate, NodeSchema
 from app.models.node import Node
@@ -12,6 +14,8 @@ from app.schemas.ccn_metrics import CcnMetricCreate, CcnMetricSchema
 from app.models.message import Message
 from app.models.subscriber import Subscriber, Subscription
 from app.models.user_session import UserSession
+from app.schemas.subscriber import SubscriberSchema
+from app.schemas.user_session import UserSessionSchema
 
 
 logger = logging.getLogger(__name__) 
@@ -21,7 +25,7 @@ class NodeRepository():
         self.db_session = db_session
 
     
-    def get_crn_node_by_aleph_node_id(self, aleph_node_id: str) -> NodeSchema:
+    def get_node_by_aleph_node_id(self, aleph_node_id: str) -> NodeSchema:
         model = self.db_session.query(Node).filter_by(aleph_node_id=aleph_node_id).first()
 
         return NodeSchema.model_validate(model, from_attributes=True) 
@@ -80,7 +84,7 @@ class NodeRepository():
         return response_data
 
     
-    def save_crn_node(self, crn_node_create: NodeCreate) -> NodeSchema:
+    def save_node(self, crn_node_create: NodeCreate) -> NodeSchema:
         node = Node(**crn_node_create.__dict__)
 
         self.db_session.add(node)
@@ -169,7 +173,6 @@ class NodeRepository():
         return crn_metrics
     
     def get_latest_crn_metric_for_subscriber_nodes(self, subscriber_id: uuid.UUID):
-
         latest_crn_metrics = self.db_session.query(CrnMetric)\
             .join(Node, Node.id == CrnMetric.node_id)\
             .join(Subscription, Subscription.id == Node.id)\
@@ -180,3 +183,45 @@ class NodeRepository():
             .first()
 
         return latest_crn_metrics
+    
+    def delete_old_crn_metrics(self, days_old: int) -> int:
+        target_date = datetime.now() - timedelta(days=days_old)
+        target_date_unix = target_date.timestamp()
+
+        count = self.db_session.query(CrnMetric).filter(CrnMetric.measured_at < target_date_unix).delete()
+        self.db_session.commit()
+
+        return count
+
+    def delete_old_ccn_metrics(self, days_old: int) -> int:
+        target_date = datetime.now() - timedelta(days=days_old)
+        target_date_unix = target_date.timestamp()
+
+        count = self.db_session.query(CcnMetric).filter(CcnMetric.measured_at < target_date_unix).delete()
+        self.db_session.commit()
+
+        return count
+    
+    def get_subscribers_indexed_by_node_id(self) -> dict[uuid.UUID, list[SubscriberSchema]]:
+            subscriptions = self.db_session.query(Subscription).all()
+
+            subscribers_by_node_id = {}
+
+            for subscription in subscriptions:
+                node_id = subscription.node_id
+                logger.info(subscription.subscriber)
+                subscriber_schema = SubscriberSchema(
+                    id=subscription.subscriber.id,
+                    type=subscription.subscriber.type,
+                    value=subscription.subscriber.value,
+                    user_session=UserSessionSchema.model_validate(
+                        subscription.subscriber.user_session, from_attributes=True
+                        )
+                )
+
+                if node_id not in subscribers_by_node_id:
+                    subscribers_by_node_id[node_id] = [subscriber_schema]
+                else:
+                    subscribers_by_node_id[node_id].append(subscriber_schema)
+
+            return subscribers_by_node_id

@@ -1,10 +1,9 @@
 
 from datetime import datetime
-from typing import Any
 import uuid
 
 from sqlalchemy import Boolean, Column, ForeignKey, String, DateTime, func, JSON
-from sqlalchemy.orm import declarative_base, relationship, Mapped
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
@@ -18,5 +17,6 @@ class Notification(Base):
     node_status: Mapped[bool] = Column(Boolean)
     created_at: Mapped[datetime] = Column(DateTime, server_default=func.now())
 
-    subscription_id: Mapped[UUID] = Column(ForeignKey('subscription.id'))  # Correct ForeignKey reference
+    subscription_id: Mapped[UUID] = Column(ForeignKey('subscription.id'))
     subscription: Mapped["Subscription"] = relationship("Subscription", back_populates="notifications")
+    

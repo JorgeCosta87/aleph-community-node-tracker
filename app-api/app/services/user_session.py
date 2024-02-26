@@ -1,10 +1,9 @@
 import logging
 import secrets
-import smtplib
-
 import uuid
 
 from fastapi import HTTPException
+from app.utils.utils import Utils
 
 from app.repositories.subscribe import SubscribeRepository
 from app.schemas.subscriber import SubscriberCreate
@@ -132,18 +131,15 @@ class UserSessionService():
 
     @staticmethod
     def _send_verification_email(email_to: str, token: str):
-        sender_email = "aleph.community.node.tracker@gmail.com"
-        sender_password = "ejzh rreu wkyt fgqi"
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
 
         verification_link = f"http://{settings.email_verify_domain}/api/v1/verify?token={token}"
         email_subject = "Aleph community node tracker Verify your email"
         email_body = f"Please click on the link to verify your email: {verification_link}"
 
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, email_to, f"Subject: {email_subject}\n\n{email_body}")
+        Utils.send_email(
+            email_to,
+            email_subject,
+            email_body
+        )
 
  

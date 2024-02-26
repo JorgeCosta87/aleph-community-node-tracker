@@ -1,0 +1,41 @@
+[33mcommit ad50e2bcc3043ce34c0650523e69193bf4b88823[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Wed Feb 14 14:38:50 2024 +0000
+
+    improve UI
+
+[33mcommit 2a4c00b21d0ab9da8d31b3144697533756dcd01c[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Wed Feb 14 14:35:49 2024 +0000
+
+    Fix Ccn data, improve UI
+
+[33mcommit 9215e9755ab1e88ce6b4e786d6803b24bf94fe78[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Wed Feb 14 09:29:39 2024 +0000
+
+    Add support to CCN nodes, fix minor bugs
+
+[33mcommit c25e8fd455a90e30cce88b612af7e7cc13a9f6cb[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Tue Feb 13 16:44:19 2024 +0000
+
+    Fix import
+
+[33mcommit e29dfa328c45c911451e7d543ecb5d3fdb9c4031[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Tue Feb 13 16:34:29 2024 +0000
+
+    Add domain for email verification
+
+[33mcommit 74499526e1f6c492227d351b31c00344d6261acd[m
+Author: Costa <jorgemdcosta@gmail.com>
+Date:   Wed Feb 7 13:04:53 2024 +0000
+
+    Alpha version
+
+[33mcommit 39209d1283c22b6f92e3c07787ad96a866dce6be[m
+Author: Jorge Costa <Jorgemdcosta@gmail.com>
+Date:   Wed Feb 7 12:50:27 2024 +0000
+
+    Initial commit
