@@ -181,9 +181,6 @@ user_session = st.session_state['user_session']
 print(user_session)
 
 if user_session:
-
-    st.session_state['tab_selected'] = "ccn"
-
     email =  user_session.value
     print(st.session_state['user_session'])
 
@@ -207,7 +204,7 @@ if user_session:
 
     subscribed_nodes = filter_nodes(nodes_metrics.metrics, subscribed=True)
 
-    if len(subscribed_nodes) > 0 and search_query is None:
+    if len(subscribed_nodes) > 0 and (search_query is None or not search_query):
         st.session_state['tab_selected'] = "subscribed"
 
     chosen_id = stx.tab_bar(data=[
@@ -225,7 +222,6 @@ if user_session:
 
     
     st.session_state['tab_selected'] = chosen_id
-
     if chosen_id == "ccn":
         filtered_nodes = filter_nodes(nodes_metrics.metrics, NodeType.CCN)
         #print(filtered_nodes)
