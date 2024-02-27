@@ -55,7 +55,7 @@ def display_nodes(
                 st.markdown(f"<div class='div-height'>{truncate_and_hover(node.last_metric.version, 15)}</div>", unsafe_allow_html=True)
 
             with col3:
-                st.markdown(f"<div class='div-height'>{truncate_and_hover(node.last_metric.url, 37)}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='div-height'><a href='{node.last_metric.url}' target='_blank'>{truncate_and_hover(node.last_metric.url, 37)}</a></div>", unsafe_allow_html=True)
             with col4:
                 if st.button("📋", key=f'details_button_{index}'):
                     current_state = st.session_state[details_key]
