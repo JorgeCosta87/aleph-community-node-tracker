@@ -185,7 +185,8 @@ if user_session:
     print(st.session_state['user_session'])
 
     nodes_metrics = fetch_user_session_data(user_session.session_id)
-    st.session_state['tab_selected'] = "ccn"
+    if st.session_state['tab_selected'] is None:
+        st.session_state['tab_selected'] = "ccn"
 
     if email:
         st.write(f"Weclome {email}")

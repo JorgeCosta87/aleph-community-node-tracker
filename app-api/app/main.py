@@ -8,6 +8,7 @@ from alembic.command import upgrade
 from app.routers.nodes_metrics import node_metrics_router
 from app.routers.user_session import user_session_router
 from app.routers.subscribe_node import subscriber_router
+from app.routers.telegram_bot import telegram_bot_api
 
 import logging
 
@@ -20,6 +21,7 @@ app = FastAPI()
 app.include_router(node_metrics_router)
 app.include_router(user_session_router)
 app.include_router(subscriber_router)
+app.include_router(telegram_bot_api)
 
 app.add_middleware(
     CORSMiddleware,
